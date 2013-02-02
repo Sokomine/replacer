@@ -143,3 +143,11 @@ minetest.register_tool( "replacer:replacer",
     end,
 })
 
+minetest.register_craft({
+        output = 'replacer:replacer',
+        recipe = {
+                { 'default:stick' },
+                { 'default:stick' },
+                { 'bucket:bucket_empty' },
+        }
+})
