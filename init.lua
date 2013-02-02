@@ -121,11 +121,18 @@ minetest.register_tool( "replacer:replacer",
           -- consume the item
           user:get_inventory():remove_item("main", item["metadata"].." 1");
 
-          -- TODO: this easy way of digging could still be abused
-          minetest.env:dig_node( pos );
- 
-          -- give the player the item
-          user:get_inventory():add_item( "main", node.name.." 1");
+
+          -- give the player the item by simulating digging if possible
+          if(   node.name ~= "air" 
+            and node.name ~= "ignore"
+            and node.name ~= "default:lava_source" 
+            and node.name ~= "default:lava_flowing"
+            and node.name ~= "default:water_source"
+            and node.name ~= "default:water_flowing" ) then
+
+             minetest.node_dig( pos, node, user );
+          end
+          --user:get_inventory():add_item( "main", node.name.." 1");
        end
 
        minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."'.");
