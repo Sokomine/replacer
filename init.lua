@@ -1,4 +1,24 @@
 
+          
+--[[
+    Replacement tool for creative building (Mod for MineTest)
+    Copyright (C) 2013 Sokomine
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+--]]
+
+    
 -- adds a function to check ownership of a node; taken from VanessaEs homedecor mod
 dofile(minetest.get_modpath("replacer").."/check_owner.lua");
 
@@ -91,7 +111,7 @@ minetest.register_tool( "replacer:replacer",
        -- do not replace if there is nothing to be done
        if( node.name == item[ "metadata"] ) then
 
-          minetest.chat_send_player( name, "Node already is '"..( item[ "metadata"] or "?" ).."'. Nothing to do.");
+          --minetest.chat_send_player( name, "Node already is '"..( item[ "metadata"] or "?" ).."'. Nothing to do.");
           return nil;
        end
 
@@ -135,7 +155,7 @@ minetest.register_tool( "replacer:replacer",
           --user:get_inventory():add_item( "main", node.name.." 1");
        end
 
-       minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."'.");
+       --minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."'.");
 
        --minetest.env:place_node( pos, { name =  item[ "metadata" ] } );
        minetest.env:add_node( pos, { name =  item[ "metadata" ] } );
