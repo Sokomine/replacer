@@ -21,6 +21,8 @@
 -- Version 2.0
 
 -- Changelog: 
+-- 20.11.2013 * if the server version is new enough, minetest.is_protected is used
+--              in order to check if the replacement is allowed
 -- 24.04.2013 * param1 and param2 are now stored
 --            * hold sneak + right click to store new pattern
 --            * right click: place one of the itmes 

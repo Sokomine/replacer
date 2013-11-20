@@ -1,6 +1,12 @@
 -- taken from Vanessa Ezekowitz' homedecor mod
 -- see http://forum.minetest.net/viewtopic.php?pid=26061 or https://github.com/VanessaE/homedecor for details!
 function replacer_homedecor_node_is_owned(pos, placer)
+
+	if type( minetest.is_protected == "function") then
+		return minetest.is_protected( pos, placer:get_player_name() );
+	end
+
+
         local ownername = false
         if type(IsPlayerNodeOwner) == "function" then                                   -- node_ownership mod
                 if HasOwner(pos, placer) then                                           -- returns true if the node is owned
