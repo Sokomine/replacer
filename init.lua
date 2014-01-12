@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
--- Version 2.0
+-- Version 2.1
 
 -- Changelog: 
 -- 12.01.2013 * If digging the node was unsuccessful, then the replacement will now fail
