@@ -21,6 +21,8 @@
 -- Version 2.0
 
 -- Changelog: 
+-- 12.01.2013 * If digging the node was unsuccessful, then the replacement will now fail
+--              (instead of destroying the old node with its metadata; i.e. chests with content)
 -- 20.11.2013 * if the server version is new enough, minetest.is_protected is used
 --              in order to check if the replacement is allowed
 -- 24.04.2013 * param1 and param2 are now stored
@@ -184,8 +186,6 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
              return nil;
           end
 
-          -- consume the item
-          user:get_inventory():remove_item("main", daten[1].." 1");
 
 
           -- give the player the item by simulating digging if possible
@@ -197,7 +197,20 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
             and node.name ~= "default:water_flowing" ) then
 
              minetest.node_dig( pos, node, user );
+
+             local digged_node = minetest.env:get_node_or_nil( pos );
+             if( not( digged_node ) 
+                or digged_node.name == node.name ) then
+
+                minetest.chat_send_player( name, "Replacing '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."' failed. Unable to remove old node.");
+                return nil;
+             end
+            
           end
+
+          -- consume the item
+          user:get_inventory():remove_item("main", daten[1].." 1");
+
           --user:get_inventory():add_item( "main", node.name.." 1");
        end
 
