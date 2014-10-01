@@ -94,12 +94,117 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 	minetest.chat_send_player( name, text );
 	
 	if( show_receipe ) then
-		local res = minetest.get_all_craft_recipes( node.name );
-		-- TODO: show a nice formspec
-minetest.chat_send_player( name, 'RECEIPES: '..minetest.serialize( res ));
+		replacer.inspect_show_crafting( name, node.name, nil );
 	end
 	return nil; -- no item shall be removed from inventory
-    end
+end
+
+
+replacer.image_button_link = function( stack_string )
+	local stack = ItemStack( stack_string );
+	local new_node_name = stack_string;
+	if( stack and stack:get_name()) then
+		new_node_name = stack:get_name();
+	end
+	return tostring( stack_string )..';'..tostring( new_node_name );
+end
+
+replacer.inspect_show_crafting = function( name, node_name, fields )
+	if( not( name )) then
+		return;
+	end
+	local receipe_nr = 1;
+	if( not( node_name )) then
+		node_name  = fields.node_name;
+		receipe_nr = tonumber(fields.receipe_nr);
+	end
+
+
+	local res = minetest.get_all_craft_recipes( node_name );
+
+	-- offer all alternate creafting receipes thrugh prev/next buttons
+	if(     fields and fields.prev_receipe and res and receipe_nr > 1 ) then
+		receipe_nr = receipe_nr - 1;
+	elseif( fields and fields.next_receipe and res and receipe_nr < #res ) then
+		receipe_nr = receipe_nr + 1;
+	end
+
+	-- the player may ask for receipes of indigrents to the current receipe
+	if( fields ) then
+		for k,v in pairs( fields ) do
+			if( v and v=="" and (minetest.registered_items[ k ]
+			                 or  minetest.registered_nodes[ k ]
+			                 or  minetest.registered_craftitems[ k ]
+			                 or  minetest.registered_tools[ k ] )) then
+				node_name = k;
+				receipe_nr = 1;
+			end
+		end
+	end
+
+	local formspec = "size[6,6]"..
+		"field[20,20;0.1,0.1;node_name;node_name;"..node_name.."]".. -- invisible field for passing on information
+		"field[21,21;0.1,0.1;receipe_nr;receipe_nr;"..tostring( receipe_nr ).."]".. -- another invisible field
+		"label[1,0;"..tostring( node_name ).."]"..
+		"item_image_button[5,2;1.0,1.0;"..tostring( node_name )..";normal;]";
+	if( not( res ) or receipe_nr > #res or receipe_nr < 1 ) then
+		receipe_nr = 1;
+	end
+	if( res and receipe_nr > 1 ) then
+		formspec = formspec.."button[3.8,5;1,0.5;prev_receipe;prev]";
+	end
+	if( res and receipe_nr < #res ) then
+		formspec = formspec.."button[5.0,5;1,0.5;next_receipe;next]";
+	end
+	if( not( res ) or #res<1) then
+		formspec = formspec..'label[3,1;No receipes.]';
+		if(   minetest.registered_nodes[ node_name ]
+		  and minetest.registered_nodes[ node_name ].drop ) then
+			local drop = minetest.registered_nodes[ node_name ].drop;
+			if( drop and type( drop )=='string' and drop ~= node_name ) then
+				formspec = formspec.."label[2,1.6;Drops on dig:]"..
+					"item_image_button[2,2;1.0,1.0;"..replacer.image_button_link( drop )..";]";
+			end
+		end
+	else
+		formspec = formspec.."label[1,5;Alternate "..tostring( receipe_nr ).."/"..tostring( #res ).."]";
+-- TODO: handle groups
+-- TODO: add support for saw
+-- TODO: add support for colormachine
+		-- reverse order; default receipes (and thus the most intresting ones) are usually the oldest
+		local receipe = res[ #res+1-receipe_nr ];
+		if(     receipe.type=='normal'  and receipe.items and #receipe.items>0) then
+			for i=1,9 do
+				if( receipe.items[i] ) then
+					formspec = formspec.."item_image_button["..(((i-1)%3)+1)..','..(math.floor((i-1)/3)+1)..";1.0,1.0;"..
+							replacer.image_button_link( receipe.items[i] )..";]";
+				end
+			end
+		elseif( receipe.type=='cooking' and receipe.items and #receipe.items==1 ) then
+			formspec = formspec.."image[1,1;3.4,3.4;default_furnace_front.png]"..
+					"item_image_button[2,2;1.0,1.0;"..replacer.image_button_link( receipe.items[1] )..";]";
+		else
+			formspec = formspec..'label[3,1;Error: Unkown receipe.]';
+		end
+		-- show how many of the items the receipe will yield
+		local outstack = ItemStack( receipe.output );
+		if( outstack and outstack:get_count() and outstack:get_count()>1 ) then
+			formspec = formspec..'label[5.5,2.5;'..tostring( outstack:get_count() )..']';
+		end
+	end
+	minetest.show_formspec( name, "replacer:crafting", formspec );
+end
+
+-- translate general formspec calls back to specific calls
+replacer.form_input_handler = function( player, formname, fields)
+        if( formname and formname == "replacer:crafting" and player and not( fields.quit )) then
+		replacer.inspect_show_crafting( player:get_player_name(), nil, fields );
+                return;
+        end
+end
+
+-- establish a callback so that input from the player-specific formspec gets handled
+minetest.register_on_player_receive_fields( replacer.form_input_handler );
 
 
 minetest.register_craft({
