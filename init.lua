@@ -21,6 +21,7 @@
 -- Version 2.1
 
 -- Changelog: 
+-- 01.10.2014 * Added inspect-tool.
 -- 12.01.2013 * If digging the node was unsuccessful, then the replacement will now fail
 --              (instead of destroying the old node with its metadata; i.e. chests with content)
 -- 20.11.2013 * if the server version is new enough, minetest.is_protected is used
@@ -36,6 +37,8 @@ dofile(minetest.get_modpath("replacer").."/check_owner.lua");
 
 replacer = {};
 
+-- adds a tool for inspecting nodes and entities
+dofile(minetest.get_modpath("replacer").."/inspect.lua");
 
 minetest.register_tool( "replacer:replacer",
 {
@@ -230,3 +233,5 @@ minetest.register_craft({
                 { '',              '',              'default:chest' },
         }
 })
+
+
