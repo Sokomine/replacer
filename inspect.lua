@@ -37,6 +37,10 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 		return nil;
 	end
 	local name = user:get_player_name();
+	local keys = user:get_player_control();
+	if( keys["sneak"] ) then
+		show_receipe = true;
+	end
  
 	if(     pointed_thing.type == 'object' ) then
 		local text = 'This is ';
@@ -54,6 +58,9 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 					sdata = minetest.deserialize( sdata );
 					if( sdata.itemstring ) then
 						text = text..' ['..tostring( sdata.itemstring )..']';
+						if( show_receipe ) then
+							replacer.inspect_show_crafting( name, sdata.itemstring, nil );
+						end
 					end
 					if( sdata.age ) then
 						text = text..', dropped '..tostring( math.floor( sdata.age/60 ))..' minutes ago';
