@@ -18,9 +18,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
--- Version 2.1
+-- Version 3.0
 
 -- Changelog: 
+-- 02.10.2014 * Some more improvements for inspect-tool. Added craft-guide.
 -- 01.10.2014 * Added inspect-tool.
 -- 12.01.2013 * If digging the node was unsuccessful, then the replacement will now fail
 --              (instead of destroying the old node with its metadata; i.e. chests with content)
