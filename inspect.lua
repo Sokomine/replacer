@@ -80,7 +80,7 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 	end
 	
 	local pos  = minetest.get_pointed_thing_position( pointed_thing, mode );
-	local node = minetest.env:get_node_or_nil( pos );
+	local node = minetest.get_node_or_nil( pos );
        
 	if( node == nil ) then
 		minetest.chat_send_player( name, "Error: Target node not yet loaded. Please wait a moment for the server to catch up.");

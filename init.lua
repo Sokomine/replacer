@@ -86,7 +86,7 @@ minetest.register_tool( "replacer:replacer",
        end
 
        local pos  = minetest.get_pointed_thing_position( pointed_thing, under );
-       local node = minetest.env:get_node_or_nil( pos );
+       local node = minetest.get_node_or_nil( pos );
        
        --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
 
@@ -128,7 +128,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
        end
 
        local pos  = minetest.get_pointed_thing_position( pointed_thing, mode );
-       local node = minetest.env:get_node_or_nil( pos );
+       local node = minetest.get_node_or_nil( pos );
        
        --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
 
@@ -165,7 +165,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
           -- the node itshelf remains the same, but the orientation was changed
           if( node.param1 ~= daten[2] or node.param2 ~= daten[3] ) then
-             minetest.env:add_node( pos, { name = node.name, param1 = daten[2], param2 = daten[3] } );
+             minetest.add_node( pos, { name = node.name, param1 = daten[2], param2 = daten[3] } );
           end
 
           return nil;
@@ -202,7 +202,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
              minetest.node_dig( pos, node, user );
 
-             local digged_node = minetest.env:get_node_or_nil( pos );
+             local digged_node = minetest.get_node_or_nil( pos );
              if( not( digged_node ) 
                 or digged_node.name == node.name ) then
 
@@ -220,8 +220,8 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
        --minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."'.");
 
-       --minetest.env:place_node( pos, { name =  item[ "metadata" ] } );
-       minetest.env:add_node( pos, { name =  daten[1], param1 = daten[2], param2 = daten[3] } );
+       --minetest.place_node( pos, { name =  item[ "metadata" ] } );
+       minetest.add_node( pos, { name =  daten[1], param1 = daten[2], param2 = daten[3] } );
        return nil; -- no item shall be removed from inventory
     end
 
