@@ -111,11 +111,26 @@ replacer.group_placeholder = {};
 replacer.group_placeholder[ 'group:wood'  ] = 'default:wood';
 replacer.group_placeholder[ 'group:tree'  ] = 'default:tree';
 replacer.group_placeholder[ 'group:stick' ] = 'default:stick';
-replacer.group_placeholder[ 'group:stone' ] = 'default:stone';
+replacer.group_placeholder[ 'group:stone' ] = 'default:cobble'; -- 'default:stone';  point people to the cheaper cobble
 replacer.group_placeholder[ 'group:sand'  ] = 'default:sand';
 replacer.group_placeholder[ 'group:leaves'] = 'default:leaves';
 replacer.group_placeholder[ 'group:wood_slab'] = 'stairs:slab_wood';
 replacer.group_placeholder[ 'group:wool'  ] = 'wool:white';
+
+-- handle the standard dye color groups
+if( minetest.get_modpath("dye") and dye and dye.basecolors) then
+	for i,color in ipairs( dye.basecolors ) do
+		local def = minetest.registered_items[ "dye:"..color ];
+		if( def and def.groups ) then
+			for k,v in pairs( def.groups ) do
+				if( k ~= 'dye' ) then
+					replacer.group_placeholder[ 'group:dye,'..k ] = 'dye:'..color;
+				end
+			end
+			replacer.group_placeholder[ 'group:flower,color_'..color ] = 'dye:'..color;
+		end
+	end
+end 
 
 replacer.image_button_link = function( stack_string )
 	local group = '';
@@ -210,6 +225,7 @@ replacer.inspect_show_crafting = function( name, node_name, fields )
 	end
 
 	local formspec = "size[6,6]"..
+		"label[0,0;Name:]"..
 		"field[20,20;0.1,0.1;node_name;node_name;"..node_name.."]".. -- invisible field for passing on information
 		"field[21,21;0.1,0.1;receipe_nr;receipe_nr;"..tostring( receipe_nr ).."]".. -- another invisible field
 		"label[1,0;"..tostring( node_name ).."]"..
@@ -238,9 +254,13 @@ replacer.inspect_show_crafting = function( name, node_name, fields )
 		-- reverse order; default receipes (and thus the most intresting ones) are usually the oldest
 		local receipe = res[ #res+1-receipe_nr ];
 		if(     receipe.type=='normal'  and receipe.items) then
+			local width = receipe.width;
+			if( not( width ) or width==0 ) then
+				width = 3;
+			end
 			for i=1,9 do
 				if( receipe.items[i] ) then
-					formspec = formspec.."item_image_button["..(((i-1)%3)+1)..','..(math.floor((i-1)/3)+1)..";1.0,1.0;"..
+					formspec = formspec.."item_image_button["..(((i-1)%width)+1)..','..(math.floor((i-1)/width)+1)..";1.0,1.0;"..
 							replacer.image_button_link( receipe.items[i] ).."]";
 				end
 			end
