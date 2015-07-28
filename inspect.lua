@@ -21,12 +21,12 @@ minetest.register_tool( "replacer:inspect",
 
     on_use = function(itemstack, user, pointed_thing)
 
-       return replacer.inspect( itemstack, user, pointed_thing, above, true ); --false );
+       return replacer.inspect( itemstack, user, pointed_thing, nil, true ); --false );
     end,
 
     on_place = function(itemstack, placer, pointed_thing)
 
-       return replacer.inspect( itemstack, placer, pointed_thing, above, true );
+       return replacer.inspect( itemstack, placer, pointed_thing, nil, true );
     end,
 })
 
@@ -128,6 +128,7 @@ replacer.group_placeholder[ 'group:leaves'] = 'default:leaves';
 replacer.group_placeholder[ 'group:wood_slab'] = 'stairs:slab_wood';
 replacer.group_placeholder[ 'group:wool'  ] = 'wool:white';
 
+
 -- handle the standard dye color groups
 if( minetest.get_modpath("dye") and dye and dye.basecolors) then
 	for i,color in ipairs( dye.basecolors ) do
@@ -159,7 +160,7 @@ replacer.image_button_link = function( stack_string )
 end
 
 replacer.add_circular_saw_receipe = function( node_name, receipes )
-	if( not( node_name ) or not( circular_saw ) or not( circular_saw.names) or (node_name=='moreblocks:circular_saw')) then
+	if( not( node_name ) or not( minetest.get_modpath("moreblocks")) or not( circular_saw ) or not( circular_saw.names) or (node_name=='moreblocks:circular_saw')) then
 		return;
 	end
 	local help = node_name:split( ':' );
@@ -183,7 +184,7 @@ help[1]='default';
 end
 
 replacer.add_colormachine_receipe = function( node_name, receipes )
-	if( not( colormachine )) then
+	if( not( minetest.get_modpath("colormachine")) or not( colormachine )) then
 		return;
 	end
 	local res = colormachine.get_node_name_painted( node_name, "" );
