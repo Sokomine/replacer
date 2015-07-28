@@ -384,8 +384,7 @@ minetest.register_on_player_receive_fields( replacer.form_input_handler );
 minetest.register_craft({
         output = 'replacer:inspect',
         recipe = {
-                { '', 'default:mese_crystal', '' },
-                { '', 'default:sign_wall',    '' },
-                { '', '',                     '' },
+                { 'default:torch' },
+                { 'default:stick' },
         }
 })
