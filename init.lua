@@ -50,6 +50,7 @@ minetest.register_tool( "replacer:replacer",
     wield_scale = {x=1,y=1,z=1},
     stack_max = 1, -- it has to store information - thus only one can be stacked
     liquids_pointable = true, -- it is ok to painit in/with water
+--[[
     -- the tool_capabilities are of nearly no intrest here
     tool_capabilities = {
         full_punch_interval = 1.0,
@@ -61,6 +62,7 @@ minetest.register_tool( "replacer:replacer",
             choppy={times={[3]=0.90}, maxwear=0.05, maxlevel=0}
         }
     },
+--]]
     node_placement_prediction = nil,
     metadata = "default:dirt", -- default replacement: common dirt
 

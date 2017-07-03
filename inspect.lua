@@ -25,6 +25,7 @@ minetest.register_tool( "replacer:inspect",
     wield_image = "",
     wield_scale = {x=1,y=1,z=1},
     liquids_pointable = true, -- it is ok to request information about liquids
+--[[
     -- the tool_capabilities are of no intrest here; it is not for digging
     tool_capabilities = {
         full_punch_interval = 1.0,
@@ -35,6 +36,7 @@ minetest.register_tool( "replacer:inspect",
             choppy={times={[3]=0.90}, maxwear=0.05, maxlevel=0}
         }
     },
+--]]
     node_placement_prediction = nil,
 
     on_use = function(itemstack, user, pointed_thing)
