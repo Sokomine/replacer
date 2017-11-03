@@ -171,7 +171,8 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
 
        -- in survival mode, the player has to provide the node he wants to be placed
-       if( not(minetest.setting_getbool("creative_mode") )) then
+       if( not(minetest.setting_getbool("creative_mode") )
+	  and not( minetest.check_player_privs( name, {creative=true}))) then
  
           -- players usually don't carry dirt_with_grass around; it's safe to assume normal dirt here
           -- fortionately, dirt and dirt_with_grass does not make use of rotation
