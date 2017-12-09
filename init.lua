@@ -21,6 +21,10 @@
 -- Version 3.0
 
 -- Changelog: 
+-- 09.12.2017 * Got rid of outdated minetest.env
+--            * Fixed error in protection function.
+--            * Fixed minor bugs.
+--            * Added blacklist
 -- 02.10.2014 * Some more improvements for inspect-tool. Added craft-guide.
 -- 01.10.2014 * Added inspect-tool.
 -- 12.01.2013 * If digging the node was unsuccessful, then the replacement will now fail
@@ -37,6 +41,19 @@
 dofile(minetest.get_modpath("replacer").."/check_owner.lua");
 
 replacer = {};
+
+replacer.blacklist = {};
+
+-- playing with tnt and creative building are usually contradictory
+-- (except when doing large-scale landscaping in singleplayer)
+replacer.blacklist[ "tnt:boom"] = true;
+replacer.blacklist[ "tnt:gunpowder"] = true;
+replacer.blacklist[ "tnt:gunpowder_burning"] = true;
+replacer.blacklist[ "tnt:tnt"] = true;
+
+-- prevent accidental replacement of your protector
+replacer.blacklist[ "protector:protect"] = true;
+replacer.blacklist[ "protector:protect2"] = true;
 
 -- adds a tool for inspecting nodes and entities
 dofile(minetest.get_modpath("replacer").."/inspect.lua");
@@ -158,6 +175,18 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
           return nil;
        end
 
+       if( node.name and node.name ~= "" and replacer.blacklist[ node.name ]) then
+          minetest.chat_send_player( name, "Replacing blocks of the type '"..( node.name or "?" )..
+		"' is not allowed on this server. Replacement failed.");
+          return nil;
+       end
+
+       if( replacer.blacklist[ daten[1] ]) then
+          minetest.chat_send_player( name, "Placing blocks of the type '"..( daten[1] or "?" )..
+		"' with the replacer is not allowed on this server. Replacement failed.");
+          return nil;
+       end
+
        -- do not replace if there is nothing to be done
        if( node.name == daten[1] ) then
 
@@ -170,12 +199,12 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
        end
 
 
-       -- in survival mode, the player has to provide the node he wants to be placed
+       -- in survival mode, the player has to provide the node he wants to place
        if( not(minetest.setting_getbool("creative_mode") )
 	  and not( minetest.check_player_privs( name, {creative=true}))) then
  
           -- players usually don't carry dirt_with_grass around; it's safe to assume normal dirt here
-          -- fortionately, dirt and dirt_with_grass does not make use of rotation
+          -- fortunately, dirt and dirt_with_grass does not make use of rotation
           if( daten[1] == "default:dirt_with_grass" ) then
              daten[1] = "default:dirt";
              item["metadata"] = "default:dirt 0 0";
@@ -196,6 +225,8 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
             and node.name ~= "ignore"
             and node.name ~= "default:lava_source" 
             and node.name ~= "default:lava_flowing"
+	    and node.name ~= "default:river_water_source"
+	    and node.name ~= "default:river_water_flowing"
             and node.name ~= "default:water_source"
             and node.name ~= "default:water_flowing" ) then
 

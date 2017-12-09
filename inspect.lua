@@ -71,7 +71,7 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 			text = text..'your fellow player \"'..tostring( ref:get_player_name() )..'\"';
 		else
 			local luaob = ref:get_luaentity();
-			if( luaob ) then
+			if( luaob and luaob.get_staticdata) then
 				text = text..'entity \"'..tostring( luaob.name )..'\"';
 				local sdata = luaob:get_staticdata();
 				if( sdata ) then
