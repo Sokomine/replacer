@@ -76,14 +76,14 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 				local sdata = luaob:get_staticdata();
 				if( sdata ) then
 					sdata = minetest.deserialize( sdata );
-					if( sdata.itemstring ) then
+					if( sdata and sdata.itemstring ) then
 						text = text..' ['..tostring( sdata.itemstring )..']';
 						if( show_receipe ) then
 							-- the fields part is used here to provide additional information about the entity
 							replacer.inspect_show_crafting( name, sdata.itemstring, { pos=pos, luaob=luaob} );
 						end
 					end
-					if( sdata.age ) then
+					if( sdata and sdata.age ) then
 						text = text..', dropped '..tostring( math.floor( sdata.age/60 ))..' minutes ago';
 					end
 				end
