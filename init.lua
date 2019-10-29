@@ -221,14 +221,8 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
 
           -- give the player the item by simulating digging if possible
-          if(   node.name ~= "air" 
-            and node.name ~= "ignore"
-            and node.name ~= "default:lava_source" 
-            and node.name ~= "default:lava_flowing"
-	    and node.name ~= "default:river_water_source"
-	    and node.name ~= "default:river_water_flowing"
-            and node.name ~= "default:water_source"
-            and node.name ~= "default:water_flowing" ) then
+          local node_def = minetest.registered_nodes[node.name]
+          if node_def and not node_def.buildable_to then
 
              minetest.node_dig( pos, node, user );
 
