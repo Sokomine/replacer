@@ -228,16 +228,9 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
           end
 
 
-
           -- give the player the item by simulating digging if possible
           if(   node.name ~= "air" 
-            and node.name ~= "ignore"
-            and node.name ~= "default:lava_source" 
-            and node.name ~= "default:lava_flowing"
-	    and node.name ~= "default:river_water_source"
-	    and node.name ~= "default:river_water_flowing"
-            and node.name ~= "default:water_source"
-            and node.name ~= "default:water_flowing" ) then
+            and node.name ~= "ignore") then
 
              minetest.node_dig( pos, node, user );
 
@@ -245,8 +238,13 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
              if( not( digged_node ) 
                 or digged_node.name == node.name ) then
 
-                minetest.chat_send_player( name, "Replacing '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."' failed. Unable to remove old node.");
-                return nil;
+                -- some nodes - like liquids - cannot be digged. but they are buildable_to and
+                -- thus can be replaced
+                local node_def = minetest.registered_nodes[node.name]
+                if(not(node_def) or not(node_def.buildable_to)) then
+                   minetest.chat_send_player( name, "Replacing '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."' failed. Unable to remove old node.");
+                   return nil;
+                end
              end
             
           end
