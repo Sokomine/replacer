@@ -107,7 +107,7 @@ minetest.register_tool( "replacer:replacer",
           return nil;
        end
 
-       local pos  = minetest.get_pointed_thing_position( pointed_thing, under );
+       local pos  = minetest.get_pointed_thing_position( pointed_thing, false ); -- node under
        local node = minetest.get_node_or_nil( pos );
        
        --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
@@ -133,7 +133,7 @@ minetest.register_tool( "replacer:replacer",
 
     on_use = function(itemstack, user, pointed_thing)
 
-       return replacer.replace( itemstack, user, pointed_thing, above );
+       return replacer.replace( itemstack, user, pointed_thing, false );
     end,
 })
 
