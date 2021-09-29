@@ -11,7 +11,7 @@ Or just use /giveme replacer:replacer
 
 Usage: Right-click on a node of that type you want to replace other nodes with.
        Left-click (normal usage) on any nodes you want to replace with the type you previously right-clicked on.
-       SHIFT-Right-click in order to store a new pattern.
+       Sneak-Right-click (alternatively: aux1-Right-click) in order to store a new pattern.
 
 When in creative mode, the node will just be replaced. Your inventory will not be changed.
 

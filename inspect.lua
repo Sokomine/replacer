@@ -58,7 +58,7 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 	end
 	local name = user:get_player_name();
 	local keys = user:get_player_control();
-	if( keys["sneak"] ) then
+	if( keys["sneak"] or keys["aux1"]) then
 		show_receipe = true;
 	end
  
