@@ -23,6 +23,7 @@
 -- Changelog: 
 -- 02.09.2021 * Added a history of stored patterns (not saved over server restart)
 --            * Added a menu to select a history entry. It is accessable via AUX1 + left click.
+--            * Removed deprecated functions get/set_metadata(..) and renamed metadata to pattern
 -- 29.09.2021 * AUX1 key works now same as SNEAK key for storing new pattern (=easier when flying)
 --            * The description of the tool now shows which pattern is stored
 --            * The description of the stored pattern is more human readable
@@ -89,7 +90,6 @@ minetest.register_tool( "replacer:replacer",
     },
 --]]
     node_placement_prediction = nil,
-    metadata = "default:dirt", -- default replacement: common dirt
 
     on_place = function(itemstack, placer, pointed_thing)
 
@@ -116,12 +116,12 @@ minetest.register_tool( "replacer:replacer",
        local node = minetest.get_node_or_nil( pos );
        
        --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
-       local metadata = "default:dirt 0 0";
+       local pattern = "default:dirt 0 0";
        if( node ~= nil and node.name ) then
-          metadata = node.name..' '..node.param1..' '..node.param2;
+          pattern = node.name..' '..node.param1..' '..node.param2;
        end
 
-       return replacer.set_to(name, metadata, placer, itemstack) -- nothing consumed but data changed
+       return replacer.set_to(name, pattern, placer, itemstack) -- nothing consumed but data changed
     end,
      
 
@@ -159,21 +159,22 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
        end
 
 
-       local item = itemstack:to_table();
+       local meta = itemstack:get_meta()
+       local pattern = meta:get_string("pattern")
 
        -- make sure it is defined
-       if( not( item[ "metadata"] ) or item["metadata"]=="" ) then
-          item["metadata"] = "default:dirt 0 0";
+       if(not(pattern) or pattern == "") then
+          pattern = "default:dirt 0 0";
        end
 
        local keys=user:get_player_control();
        if( keys["aux1"]) then
-           minetest.show_formspec(name, "replacer:menu", replacer.get_formspec(name, item["metadata"], user))
+           minetest.show_formspec(name, "replacer:menu", replacer.get_formspec(name, pattern, user))
            return nil
        end
 
        -- regain information about nodename, param1 and param2
-       local daten = item[ "metadata"]:split( " " );
+       local daten = pattern:split( " " );
        -- the old format stored only the node name
        if( #daten < 3 ) then
           daten[2] = 0;
@@ -218,7 +219,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
           -- fortunately, dirt and dirt_with_grass does not make use of rotation
           if( daten[1] == "default:dirt_with_grass" ) then
              daten[1] = "default:dirt";
-             item["metadata"] = "default:dirt 0 0";
+             pattern = "default:dirt 0 0";
           end
 
           -- does the player carry at least one of the desired nodes with him?
@@ -244,7 +245,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
                 -- thus can be replaced
                 local node_def = minetest.registered_nodes[node.name]
                 if(not(node_def) or not(node_def.buildable_to)) then
-                   minetest.chat_send_player( name, "Replacing '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."' failed. Unable to remove old node.");
+                   minetest.chat_send_player( name, "Replacing '"..( node.name or "air" ).."' with '"..( pattern or "?" ).."' failed. Unable to remove old node.");
                    return nil;
                 end
              end
@@ -257,9 +258,9 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
           --user:get_inventory():add_item( "main", node.name.." 1");
        end
 
-       --minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( item[ "metadata"] or "?" ).."'.");
+       --minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( pattern or "?" ).."'.");
 
-       --minetest.place_node( pos, { name =  item[ "metadata" ] } );
+       --minetest.place_node( pos, { name =  pattern } );
        minetest.add_node( pos, { name =  daten[1], param1 = daten[2], param2 = daten[3] } );
        return nil; -- no item shall be removed from inventory
     end

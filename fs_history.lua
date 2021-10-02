@@ -3,13 +3,13 @@
 replacer.max_hist_size = 20
 
 
--- turn stored metadata string (<node_name> <param1> <param2>) into something readable by human beeings
-replacer.human_readable_metadata = function(metadata)
-	if(not(metadata)) then
+-- turn stored pattern string (<node_name> <param1> <param2>) into something readable by human beeings
+replacer.human_readable_pattern = function(pattern)
+	if(not(pattern)) then
 		return "(nothing)"
 	end
 	-- data is stored in the form "<nodename> <param1> <param2>"
-	local parts = string.split(metadata, " ")
+	local parts = string.split(pattern, " ")
 	if(not(parts) or #parts < 3) then
 		return "(corrupted data)"
 	end
@@ -44,35 +44,37 @@ end
 
 
 -- set the replacer to a new pattern
-replacer.set_to = function(player_name, metadata, player, itemstack)
+replacer.set_to = function(player_name, pattern, player, itemstack)
 	if(not(player_name) or not(player) or not(itemstack)) then
 		return itemstack
 	end
 	-- fallback if nothing is given
-	if(not(metadata)) then
-		metadata = "default:dirt 0 0"
+	if(not(pattern)) then
+		pattern = "default:dirt 0 0"
 	end
-	itemstack:set_metadata( metadata )
 
-	local set_to = replacer.human_readable_metadata(metadata)
+	local set_to = replacer.human_readable_pattern(pattern)
 	-- change the description of the tool so that it's easier to see which replacer (if you
 	-- have more than one in your inv) is set to which node
 	local meta = itemstack:get_meta()
+	-- actually store the new pattern
+	meta:set_string("pattern", pattern )
+
 	meta:set_string("description", "Node replacement tool set to:\n"..set_to..
-					"\n["..tostring(metadata).."]")
+					"\n["..tostring(pattern).."]")
 
 	minetest.chat_send_player(player_name, "Node replacement tool set to: "..set_to..
-					"["..tostring(metadata).."].")
+					"["..tostring(pattern).."].")
 
-	replacer.add_to_hist(player_name, metadata)
+	replacer.add_to_hist(player_name, pattern)
 	return itemstack -- nothing consumed but data changed
 end
 
 
 -- keep a history of stored patterns for each player (not for each replacer);
 -- this history is not saved over server shutdown
-replacer.add_to_hist = function(player_name, metadata )
-	if(not(player_name) or not(metadata) or metadata == "") then
+replacer.add_to_hist = function(player_name, pattern)
+	if(not(player_name) or not(pattern) or pattern == "") then
 		return
 	end
 	if(not(replacer.history)) then
@@ -81,7 +83,7 @@ replacer.add_to_hist = function(player_name, metadata )
 	if(not(replacer.history[ player_name ])) then
 		replacer.history[ player_name ] = {}
 	end
-	local index = table.indexof( replacer.history[ player_name ], metadata )
+	local index = table.indexof(replacer.history[ player_name ], pattern)
 	-- only add new entries; do not store duplicates
 	if(index and index > -1) then
 		return
@@ -90,12 +92,12 @@ replacer.add_to_hist = function(player_name, metadata )
 	if(#replacer.history[ player_name ] >= replacer.max_hist_size) then
 		table.remove(replacer.history[ player_name ], 1)
 	end
-	table.insert(replacer.history[ player_name ], metadata)
+	table.insert(replacer.history[ player_name ], pattern)
 end
 
 
 -- show a formspec with a history of stored patterns to select from
-replacer.get_formspec = function(player_name, current_metadata, player)
+replacer.get_formspec = function(player_name, current_pattern, player)
 	-- is the player in creative mode?
 	local in_creative_mode = (minetest.settings:get_bool("creative_mode")
 				or minetest.check_player_privs(player_name, {creative=true}))
@@ -121,11 +123,11 @@ replacer.get_formspec = function(player_name, current_metadata, player)
 			";text,align=left,tooltip=Stored pattern:]"..
 			"table[0.2,1.0;13,6;replacer_history;"
 	-- make sure all variables exist and the current entry is stored
-	replacer.add_to_hist(player_name, current_metadata)
+	replacer.add_to_hist(player_name, current_pattern)
 	local hist_entries = {}
 	local selected = 1
 	for i, v in ipairs(replacer.history[ player_name ]) do
-		if(v == current_metadata) then
+		if(v == current_pattern) then
 			selected = i
 		end
 		local amount_left = "#00FF00,infinite supply:"
@@ -145,7 +147,7 @@ replacer.get_formspec = function(player_name, current_metadata, player)
 			end
 		end
 		hist_entries[ i ] = tostring(amount_left)..","..
-			minetest.formspec_escape(replacer.human_readable_metadata(v).." ["..v.."]")
+			minetest.formspec_escape(replacer.human_readable_pattern(v).." ["..v.."]")
 	end
 	return formspec..table.concat(hist_entries, ",")..";"..tostring(selected).."]"
 end
