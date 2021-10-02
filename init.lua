@@ -117,13 +117,15 @@ minetest.register_tool( "replacer:replacer",
        end
        itemstack:set_metadata( metadata );
 
-       local set_to = replacer.human_readable_metadata(metadata).." ["..tostring(metadata).."]"
+       local set_to = replacer.human_readable_metadata(metadata)
        -- change the description of the tool so that it's easier to see which replacer (if you
        -- have more than one in your inv) is set to which node
        local meta = itemstack:get_meta()
-       meta:set_string("description", "Replacer set to: "..set_to)
+       meta:set_string("description", "Node replacement tool set to:\n"..set_to..
+					"\n["..tostring(metadata).."]")
 
-       minetest.chat_send_player( name, "Node replacement tool set to: "..set_to..".");
+       minetest.chat_send_player( name, "Node replacement tool set to: "..set_to..
+					"["..tostring(metadata).."].")
 
        return itemstack; -- nothing consumed but data changed
     end,
