@@ -115,7 +115,6 @@ minetest.register_tool( "replacer:replacer",
        local pos  = minetest.get_pointed_thing_position( pointed_thing, false ); -- node under
        local node = minetest.get_node_or_nil( pos );
        
-       --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
        local pattern = "default:dirt 0 0";
        if( node ~= nil and node.name ) then
           pattern = node.name..' '..node.param1..' '..node.param2;
@@ -124,8 +123,6 @@ minetest.register_tool( "replacer:replacer",
        return replacer.set_to(name, pattern, placer, itemstack) -- nothing consumed but data changed
     end,
      
-
---    on_drop = func(itemstack, dropper, pos),
 
     on_use = function(itemstack, user, pointed_thing)
 
@@ -140,7 +137,6 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
           return nil;
        end
        local name = user:get_player_name();
-       --minetest.chat_send_player( name, "You USED this on "..minetest.serialize( pointed_thing )..".");
  
        if( pointed_thing.type ~= "node" ) then
           minetest.chat_send_player( name, "  Error: No node.");
@@ -150,8 +146,6 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
        local pos  = minetest.get_pointed_thing_position( pointed_thing, mode );
        local node = minetest.get_node_or_nil( pos );
        
-       --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
-
        if( node == nil ) then
 
           minetest.chat_send_player( name, "Error: Target node not yet loaded. Please wait a moment for the server to catch up.");
@@ -254,13 +248,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
           -- consume the item
           user:get_inventory():remove_item("main", daten[1].." 1");
-
-          --user:get_inventory():add_item( "main", node.name.." 1");
        end
-
-       --minetest.chat_send_player( name, "Replacing node '"..( node.name or "air" ).."' with '"..( pattern or "?" ).."'.");
-
-       --minetest.place_node( pos, { name =  pattern } );
        minetest.add_node( pos, { name =  daten[1], param1 = daten[2], param2 = daten[3] } );
        return nil; -- no item shall be removed from inventory
     end
