@@ -114,14 +114,14 @@ replacer.get_formspec = function(player_name, current_pattern, player)
 		end
 	end
 
-	local formspec = "size[14,8]"..
-		"label[4,0;Node Replacement Tool Setup and History]"..
-		"button_exit[6,7.2;2,0.8;quit;Exit]"..
+	local formspec = "size[18,8]"..
+		"label[6,0;Node Replacement Tool Setup and History]"..
+		"button_exit[8,7.2;2,0.8;quit;Exit]"..
 		"label[0.2,0.6;Click here to set the replacer to a pattern you have stored before:]"..
 		"tablecolumns[color;"..
 			"text,align=right,tooltip=Amount of nodes of this type left in your inventory:"..
-			";text,align=left,tooltip=Stored pattern:]"..
-			"table[0.2,1.0;13,6;replacer_history;"
+			";color;text,align=left,tooltip=Stored pattern:]"..
+			"table[0.2,1.0;17,6;replacer_history;"
 	-- make sure all variables exist and the current entry is stored
 	replacer.add_to_hist(player_name, current_pattern)
 	local hist_entries = {}
@@ -130,7 +130,7 @@ replacer.get_formspec = function(player_name, current_pattern, player)
 		if(v == current_pattern) then
 			selected = i
 		end
-		local amount_left = "#00FF00,infinite supply:"
+		local amount_left = "#00FF00,infinite supply:,#00FF00"
 		if(not(in_creative_mode)) then
 			-- which item are we looking for?
 			local parts = v:split(" ")
@@ -141,9 +141,10 @@ replacer.get_formspec = function(player_name, current_pattern, player)
 				parts[1] = "default:dirt"
 			end
 			if(counted_inv[ parts[1] ]) then
-				amount_left = "#00FF00,"..tostring(counted_inv[ parts[1] ]).." available:"
+				amount_left = "#00FF00,"..tostring(counted_inv[ parts[1] ]).." available:"..
+					",#00FF00"
 			else
-				amount_left = "#FF0000,none left!"
+				amount_left = "#FF0000,none left!,#CFCFCF"
 			end
 		end
 		hist_entries[ i ] = tostring(amount_left)..","..
