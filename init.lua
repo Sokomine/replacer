@@ -21,6 +21,8 @@
 -- Version 3.0
 
 -- Changelog: 
+-- 02.09.2021 * Added a history of stored patterns (not saved over server restart)
+--            * Added a menu to select a history entry. It is accessable via AUX1 + left click.
 -- 29.09.2021 * AUX1 key works now same as SNEAK key for storing new pattern (=easier when flying)
 --            * The description of the tool now shows which pattern is stored
 --            * The description of the stored pattern is more human readable
@@ -60,6 +62,9 @@ replacer.blacklist[ "protector:protect2"] = true;
 
 -- adds a tool for inspecting nodes and entities
 dofile(minetest.get_modpath("replacer").."/inspect.lua");
+
+-- adds a formspec with a history function (accessible with AUX1 + left click)
+dofile(minetest.get_modpath("replacer").."/fs_history.lua");
 
 minetest.register_tool( "replacer:replacer",
 {
@@ -115,19 +120,8 @@ minetest.register_tool( "replacer:replacer",
        if( node ~= nil and node.name ) then
           metadata = node.name..' '..node.param1..' '..node.param2;
        end
-       itemstack:set_metadata( metadata );
 
-       local set_to = replacer.human_readable_metadata(metadata)
-       -- change the description of the tool so that it's easier to see which replacer (if you
-       -- have more than one in your inv) is set to which node
-       local meta = itemstack:get_meta()
-       meta:set_string("description", "Node replacement tool set to:\n"..set_to..
-					"\n["..tostring(metadata).."]")
-
-       minetest.chat_send_player( name, "Node replacement tool set to: "..set_to..
-					"["..tostring(metadata).."].")
-
-       return itemstack; -- nothing consumed but data changed
+       return replacer.set_to(name, metadata, placer, itemstack) -- nothing consumed but data changed
     end,
      
 
@@ -170,6 +164,12 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
        -- make sure it is defined
        if( not( item[ "metadata"] ) or item["metadata"]=="" ) then
           item["metadata"] = "default:dirt 0 0";
+       end
+
+       local keys=user:get_player_control();
+       if( keys["aux1"]) then
+           minetest.show_formspec(name, "replacer:menu", replacer.get_formspec(name, item["metadata"], user))
+           return nil
        end
 
        -- regain information about nodename, param1 and param2
@@ -263,46 +263,6 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
        minetest.add_node( pos, { name =  daten[1], param1 = daten[2], param2 = daten[3] } );
        return nil; -- no item shall be removed from inventory
     end
-
-
--- turn stored metadata string (<node_name> <param1> <param2>) into something readable by human beeings
-replacer.human_readable_metadata = function(metadata)
-	if(not(metadata)) then
-		return "(nothing)"
-	end
-	-- data is stored in the form "<nodename> <param1> <param2>"
-	local parts = string.split(metadata, " ")
-	if(not(parts) or #parts < 3) then
-		return "(corrupted data)"
-	end
-	local node_name = parts[1]
-	local param2 = parts[3]
-
-	local def = minetest.registered_nodes[ node_name ]
-	if(not(def)) then
-		return "(unknown node)"
-	end
-	local text = "'"..tostring(def.description or "- no description -").."'"
-	if(not(def.description) or def.description == "") then
-		text = "- no description -"
-	end
-	-- facedir is probably the most commonly used rotation variant
-	if( def.paramtype2 == "facedir"
-	 or def.paramtype2 == "colorfacedir") then
-		local axis_names = {"y+ (Ground)", "z+ (North)", "z- (South)",
-				    "x+ (East)", "x- (West)", "y- (Sky)"}
-		text = text.." Rotated: "..tostring(param2 % 4)..
-			" around axis: "..tostring( axis_names[ math.floor( (param2%24) / 4 ) + 1 ])
-	-- wallmounted is diffrent
-	elseif( def.paramtype2 == "wallmounted"
-	     or def.paramtype2 == "colorwallmounted") then
-		local axis_names = {"y+ (Ground)", "y- (Sky)",
-				    "z+ (North)", "z- (South)",
-				    "x+ (East)", "x- (West)"}
-		text = text.." Mounted at wall: "..tostring( axis_names[ (param2 % 6)+ 1 ])
-	end
-	return text
-end
 
 
 minetest.register_craft({
