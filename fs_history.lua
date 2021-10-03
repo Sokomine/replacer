@@ -1,3 +1,5 @@
+-- apart from the history, the formspec also handles mode switches
+
 -- how many patterns are stored in the history? those don't take up much space,
 -- but a too long list might not be overly helpful for the players either
 replacer.max_hist_size = 20
@@ -114,14 +116,31 @@ replacer.get_formspec = function(player_name, current_pattern, player)
 		end
 	end
 
-	local formspec = "size[18,8]"..
+	-- find out which mode the player has currently selected
+	local current_mode = 1
+	if(replacer.user_mode and replacer.user_mode[ player_name ]) then
+		current_mode = table.indexof(replacer.mode_names, replacer.user_mode[ player_name ])
+		if(current_mode == -1) then
+			current_mode = 1
+		end
+	end
+
+	local formspec = "size[18,10]"..
 		"label[6,0;Node Replacement Tool Setup and History]"..
-		"button_exit[8,7.2;2,0.8;quit;Exit]"..
-		"label[0.2,0.6;Click here to set the replacer to a pattern you have stored before:]"..
+		"button_exit[8,9.4;2,0.8;quit;Exit]"..
+		"label[0.2,8.5;Note: Selected mode and history are reset on server restart.\n"..
+			"Note: The selected mode is valid for *all* replacers you use. "..
+			"The stored pattern is valid for *this particular* replacer only.]"..
+		"label[0.2,0.6;Select mode: When replacing (punching, left-click) or "..
+			"placing (right-click) a block, ..]"..
+		"dropdown[0.2,1.0;17;select_mode;"..
+			table.concat(replacer.mode_descriptions, ",")..
+			";"..tostring(current_mode)..";]"..
+		"label[0.2,2.1;Click here to set the replacer to a pattern you have stored before:]"..
 		"tablecolumns[color;"..
 			"text,align=right,tooltip=Amount of nodes of this type left in your inventory:"..
 			";color;text,align=left,tooltip=Stored pattern:]"..
-			"table[0.2,1.0;17,6;replacer_history;"
+		"table[0.2,2.5;17,6;replacer_history;"
 	-- make sure all variables exist and the current entry is stored
 	replacer.add_to_hist(player_name, current_pattern)
 	local hist_entries = {}
@@ -173,6 +192,14 @@ minetest.register_on_player_receive_fields( function(player, formname, fields)
 				player, itemstack)
 			player:set_wielded_item(itemstack)
 			return true
+		end
+	end
+	-- the player selected a mode
+	if(fields and fields.select_mode) then
+		local index = table.indexof(replacer.mode_descriptions,
+				minetest.formspec_escape(fields.select_mode))
+		if(index and index > -1 and replacer.mode_names[ index ]) then
+			replacer.user_mode[ player_name ] = replacer.mode_names[ index ]
 		end
 	end
 	return true

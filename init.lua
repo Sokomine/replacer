@@ -67,6 +67,10 @@ dofile(minetest.get_modpath("replacer").."/inspect.lua");
 -- adds a formspec with a history function (accessible with AUX1 + left click)
 dofile(minetest.get_modpath("replacer").."/fs_history.lua");
 
+-- adds support for the circular saw from moreblocks and similar nodes
+-- and allows to replace the *material* while keeping shape - or vice versa
+dofile(minetest.get_modpath("replacer").."/mode_of_replacement.lua");
+
 minetest.register_tool( "replacer:replacer",
 {
     description = "Node replacement tool",
@@ -181,6 +185,12 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
           return nil;
        end
 
+       local daten = replacer.get_new_node_data(node, daten, name)
+       -- nothing to replace
+       if(not(daten)) then
+          return
+       end
+
        if( node.name and node.name ~= "" and replacer.blacklist[ node.name ]) then
           minetest.chat_send_player( name, "Replacing blocks of the type '"..( node.name or "?" )..
 		"' is not allowed on this server. Replacement failed.");
@@ -203,7 +213,6 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
           return nil;
        end
-
 
        -- in survival mode, the player has to provide the node he wants to place
        if( not(minetest.settings:get_bool("creative_mode") )
