@@ -105,7 +105,7 @@ minetest.register_tool( "replacer:replacer",
 
        local keys=placer:get_player_control();
     
-       -- just place the stored node if now new one is to be selected
+       -- just place the stored node if no new one is to be selected
        if( not( keys["sneak"] ) and not( keys["aux1"])) then
 
           return replacer.replace( itemstack, placer, pointed_thing, 0  ); end
