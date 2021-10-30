@@ -75,7 +75,7 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 				text = text..'entity \"'..tostring( luaob.name )..'\"';
 				local sdata = luaob:get_staticdata();
 				if( sdata ) then
-					sdata = minetest.deserialize( sdata );
+					sdata = minetest.deserialize( sdata ) or {};
 					if( sdata.itemstring ) then
 						text = text..' ['..tostring( sdata.itemstring )..']';
 						if( show_receipe ) then
