@@ -1,4 +1,4 @@
--- HUD support added by lumberJack 
+-- HUD support added by lumberJack 2021
 
 -- store Hud ids by playername
 replacer.hud_ids = {};
@@ -14,8 +14,8 @@ function replacer.set_hud(playername, message)
         hud_elem_type = "text",
 		name = "Replacer",
 		number = 0xFFFFFF,
-		position = {x=0.7, y=1},
-		offset = {x=0, y=-8},
+		position = {x=0.5, y=1},
+		offset = {x = (-10 * 24) - 25, y = -(64 + 24 + 16)},
 		text = message,
 		scale = {x=200, y=60},
 		alignment = {x=1, y=-1},

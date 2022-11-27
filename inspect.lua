@@ -17,26 +17,13 @@ if(    minetest.get_modpath("trees")
 	replacer.image_replacements[ "default:furnace_active" ] = "oven:oven_active";
 end
 
-minetest.register_tool( "replacer:inspect",
-{
+minetest.register_tool( "replacer:inspect", {
     description = "Node inspection tool",
     groups = {}, 
     inventory_image = "replacer_inspect.png",
     wield_image = "",
     wield_scale = {x=1,y=1,z=1},
     liquids_pointable = true, -- it is ok to request information about liquids
---[[
-    -- the tool_capabilities are of no intrest here; it is not for digging
-    tool_capabilities = {
-        full_punch_interval = 1.0,
-        max_drop_level=0,
-        groupcaps={
-            fleshy={times={[2]=0.80, [3]=0.40}, maxwear=0.05, maxlevel=1},
-            snappy={times={[2]=0.80, [3]=0.40}, maxwear=0.05, maxlevel=1},
-            choppy={times={[3]=0.90}, maxwear=0.05, maxlevel=0}
-        }
-    },
---]]
     node_placement_prediction = nil,
 
     on_use = function(itemstack, user, pointed_thing)
@@ -52,7 +39,6 @@ minetest.register_tool( "replacer:inspect",
 
 
 replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe )
-
 	if( user == nil or pointed_thing == nil) then
 		return nil;
 	end
@@ -367,19 +353,19 @@ replacer.inspect_show_crafting = function( name, node_name, fields )
 			end
 		elseif( receipe.type=='cooking' and receipe.items and #receipe.items==1
 		    and receipe.output=="" ) then
-			formspec = formspec.."item_image_button[1,1;3.4,3.4;"..replacer.image_button_link( 'default:furnace_active' ).."]".. --default_furnace_front.png]"..
+			formspec = formspec.."item_image_button[1,1;1.0,1.0;"..replacer.image_button_link( 'default:furnace_active' ).."]".. --default_furnace_front.png]"..
 					"item_image_button[2.9,2.7;1.0,1.0;"..replacer.image_button_link( receipe.items[1] ).."]"..
 					"label[1.0,0;"..tostring(receipe.items[1]).."]"..
 					"label[0,0.5;This can be used as a fuel.]";
 		elseif( receipe.type=='cooking' and receipe.items and #receipe.items==1 ) then
-			formspec = formspec.."item_image_button[1,1;3.4,3.4;"..replacer.image_button_link( 'default:furnace' ).."]".. --default_furnace_front.png]"..
+			formspec = formspec.."item_image_button[1,1;1.0,1.0;"..replacer.image_button_link( 'default:furnace' ).."]".. --default_furnace_front.png]"..
 					"item_image_button[2.9,2.7;1.0,1.0;"..replacer.image_button_link( receipe.items[1] ).."]";
 		elseif( receipe.type=='colormachine' and receipe.items and #receipe.items==1 ) then
-			formspec = formspec.."item_image_button[1,1;3.4,3.4;"..replacer.image_button_link( 'colormachine:colormachine' ).."]".. --colormachine_front.png]"..
+			formspec = formspec.."item_image_button[1,1;1.0,1.0;"..replacer.image_button_link( 'colormachine:colormachine' ).."]".. --colormachine_front.png]"..
 					"item_image_button[2,2;1.0,1.0;"..replacer.image_button_link( receipe.items[1] ).."]";
 		elseif( receipe.type=='saw'          and receipe.items and #receipe.items==1 ) then
-			--formspec = formspec.."item_image[1,1;3.4,3.4;moreblocks:circular_saw]"..
-			formspec = formspec.."item_image_button[1,1;3.4,3.4;"..replacer.image_button_link( 'moreblocks:circular_saw' ).."]"..
+			--formspec = formspec.."item_image[1,1;1.0,1.0;moreblocks:circular_saw]"..
+			formspec = formspec.."item_image_button[1,1;1.0,1.0;"..replacer.image_button_link( 'moreblocks:circular_saw' ).."]"..
 					"item_image_button[2,0.6;1.0,1.0;"..replacer.image_button_link( receipe.items[1] ).."]";
 		else
 			formspec = formspec..'label[3,1;Error: Unkown receipe.]';
