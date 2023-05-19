@@ -19,20 +19,12 @@ dofile(minetest.get_modpath("replacer") .. "/hud.lua")
 
 minetest.register_tool("replacer:replacer", {
    description = "Node replacement tool",
-   groups = {},
    inventory_image = "replacer_replacer.png",
    use_texture_alpha = true,
-   wield_image = "",
-   wield_scale = {
-      x = 1,
-      y = 1,
-      z = 1
-   },
    stack_max = 1, -- it has to store information - thus only one can be stacked
    liquids_pointable = true, -- it is ok to paint in/with water
    node_placement_prediction = nil,
    metadata = "default:dirt", -- default replacement: common dirt
-
    on_place = function(itemstack, placer, pointed_thing)
       if (placer == nil or pointed_thing == nil) then
          return itemstack -- nothing consumed
