@@ -176,10 +176,9 @@ replacer.replace = function(itemstack, user, pointed_thing, mode)
         return nil
     end
 
-    -- do not replace if there is nothing to be done
+    -- do not replace if pointed node is same as current replacement node unless orientation is changed
     if (node.name == daten[1]) then
-
-        -- the node itshelf remains the same, but the orientation was changed
+        -- the node itself remains the same, but the orientation was changed
         if (node.param1 ~= daten[2] or node.param2 ~= daten[3]) then
             minetest.add_node(pos, {
                 name = node.name,
@@ -187,7 +186,17 @@ replacer.replace = function(itemstack, user, pointed_thing, mode)
                 param2 = daten[3]
             })
         end
-
+        return nil
+     -- do not replace nodes that would be converted to current replacement node if selected by replacer
+    elseif (replacer.conversions[node.name] == daten[1]) then
+        -- if orientation is changed then maintain pointed node type
+        if (node.param1 ~= daten[2] or node.param2 ~= daten[3]) then
+            minetest.add_node(pos, {
+                name = node.name,
+                param1 = daten[2],
+                param2 = daten[3]
+            })
+        end
         return nil
     end
 
