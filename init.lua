@@ -14,9 +14,39 @@ replacer.blacklist["protector:protect2"] = true
 
 -- adds a tool for inspecting nodes and entities
 dofile(minetest.get_modpath("replacer") .. "/inspect.lua")
+
 -- add support for HUD messenges
 dofile(minetest.get_modpath("replacer") .. "/hud.lua")
 
+-- Automatic conversions of nodes to be placed by placer such as selecting dirt with grass but placing dirt
+replacer.conversions = {}
+
+replacer.add_conversion = function(selected_node_name, placed_node_name)
+    replacer.conversions[selected_node_name] = placed_node_name
+end
+-- biome top nodes to be converted
+replacer.add_conversion("default:dirt_with_grass", "default:dirt")
+replacer.add_conversion("default:dirt_with_grass_footsteps", "default:dirt")
+replacer.add_conversion("default:dirt_with_rainforest_litter", "default:dirt")
+replacer.add_conversion("default:dirt_with_snow", "default:dirt")
+replacer.add_conversion("default:dirt_with_coniferous_litter", "default:dirt")
+replacer.add_conversion("default:dry_dirt_with_dry_grass", "default:dry_dirt")
+replacer.add_conversion("default:permafrost_with_stones", "default:permafrost")
+replacer.add_conversion("default:permafrost_with_moss", "default:permafrost")
+-- biome decor nodes to be converted
+replacer.add_conversion("default:grass_2", "default:grass_1")
+replacer.add_conversion("default:grass_3", "default:grass_1")
+replacer.add_conversion("default:grass_4", "default:grass_1")
+replacer.add_conversion("default:grass_5", "default:grass_1")
+replacer.add_conversion("default:dry_grass_2", "default:dry_grass_1")
+replacer.add_conversion("default:dry_grass_3", "default:dry_grass_1")
+replacer.add_conversion("default:dry_grass_4", "default:dry_grass_1")
+replacer.add_conversion("default:dry_grass_5", "default:dry_grass_1")
+replacer.add_conversion("default:fern_2", "default:fern_1")
+replacer.add_conversion("default:marram_grass_2", "default:marram_grass_1")
+replacer.add_conversion("default:marram_grass_3", "default:marram_grass_1")
+
+-- Tool
 minetest.register_tool("replacer:replacer", {
    description = "Node replacement tool",
    inventory_image = "replacer_replacer.png",
@@ -37,26 +67,12 @@ minetest.register_tool("replacer:replacer", {
       local name = placer:get_player_name()
       local mode = replacer.get_mode(placer)
       local keys = placer:get_player_control()
-
       if mode == "legacy" then
          if( not( keys["sneak"] )) then
-            return replacer.replace( itemstack, placer, pointed_thing, 0  ); end
-  
-         local pos  = minetest.get_pointed_thing_position( pointed_thing, under );
-         local node = minetest.get_node_or_nil( pos );
-         
-         --minetest.chat_send_player( name, "  Target node: "..minetest.serialize( node ).." at pos "..minetest.serialize( pos ).."."); 
-         local metadata = "default:dirt 0 0";
-         if( node ~= nil and node.name ) then
-            metadata = node.name..' '..node.param1..' '..node.param2;
-         end
-         itemstack:set_metadata( metadata );
-  
-         --minetest.chat_send_player( name, "Node replacement tool set to: '"..metadata.."'.");
-         replacer.set_hud(name, "Node replacement tool set to: '"..metadata.."'.");
-         return itemstack; -- nothing consumed but data changed
+            return replacer.replace( itemstack, placer, pointed_thing, 0  );
+        end
+        return replacer.set_replacement_node(itemstack, placer, pointed_thing)
       end
-
       -- just place the stored node if now new one is to be selected
       if (not (keys["sneak"])) then
 
@@ -70,7 +86,6 @@ minetest.register_tool("replacer:replacer", {
       local name = user:get_player_name()
       local keys = user:get_player_control()
       local mode = replacer.get_mode(user)
-
       if (pointed_thing.type ~= "node") then
          replacer.set_hud(name, "  Error: No node selected.")
          return nil
@@ -79,22 +94,36 @@ minetest.register_tool("replacer:replacer", {
          return replacer.replace( itemstack, user, pointed_thing, above );
       end
       if (keys["sneak"]) then
-         local pos = minetest.get_pointed_thing_position(pointed_thing, under)
-         local node = minetest.get_node_or_nil(pos)
-         local metadata = "default:dirt 0 0"
-         if (node ~= nil and node.name) then
-               metadata = node.name .. ' ' .. node.param1 .. ' ' .. node.param2
-         end
-         itemstack:set_metadata(metadata)
-
-         replacer.set_hud(name, "Node replacement tool set to: '" .. metadata .. "'.")
-
-         return itemstack -- nothing consumed but data changed
+         return replacer.set_replacement_node(itemstack, user, pointed_thing)
       else
          return replacer.replace(itemstack, user, pointed_thing, above)
       end
    end
 })
+
+replacer.set_replacement_node = function(itemstack, user, pointed_thing)
+    local item = itemstack:to_table()
+    local name = user:get_player_name()
+    local pos  = minetest.get_pointed_thing_position(pointed_thing, under)
+    local node = minetest.get_node_or_nil(pos)
+    local metadata = "default:dirt 0 0";
+    if (node ~= nil and node.name) then
+        local node_name = node.name
+        -- check for automatic conversions
+        if replacer.conversions[node_name] ~= nil then
+            node_name = replacer.conversions[node_name]
+        end
+
+        if minetest.get_node_group(node_name, "not_in_creative_inventory") ~= 0 then
+            return replacer.set_hud(name, "Error: " .. node_name .. " cannot be selected")
+        end
+        metadata = node_name..' '..node.param1..' '..node.param2;
+    end
+    itemstack:set_metadata(metadata)
+    --minetest.chat_send_player( name, "Node replacement tool set to: '"..metadata.."'.");
+    replacer.set_hud(name, "Node replacement tool set to: '"..metadata.."'.");
+    return itemstack; -- nothing consumed but data changed
+end
 
 replacer.replace = function(itemstack, user, pointed_thing, mode)
 
@@ -162,18 +191,23 @@ replacer.replace = function(itemstack, user, pointed_thing, mode)
         return nil
     end
 
+    -- Do not replace node that has inventory that is not empty
+    local meta = minetest.get_meta(pos)
+    local inv = meta:get_inventory()
+    local inv_lists = inv:get_lists()
+    for listname, inv_list in pairs(inv_lists) do
+        if (inv:is_empty(listname) == false) then
+            replacer.set_hud(name,
+                "Error: Replacing a node containing items in inventory is not allowed. Replacement failed"
+            )
+            return nil
+        end
+    end
+
     -- in survival mode, the player has to provide the node he wants to place
     if (not (minetest.settings:get_bool("creative_mode")) and not (minetest.check_player_privs(name, {
         creative = true
     }))) then
-
-        -- players usually don't carry dirt_with_grass around it's safe to assume normal dirt here
-        -- fortunately, dirt and dirt_with_grass does not make use of rotation
-        if (daten[1] == "default:dirt_with_grass") then
-            daten[1] = "default:dirt"
-            item["metadata"] = "default:dirt 0 0"
-        end
-
         -- does the player carry at least one of the desired nodes with him?
         if (not (user:get_inventory():contains_item("main", daten[1]))) then
             replacer.set_hud(name, "You have no further '" .. (daten[1] or "?") .. "'. Replacement failed.")
