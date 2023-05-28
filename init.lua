@@ -114,7 +114,7 @@ replacer.set_replacement_node = function(itemstack, user, pointed_thing)
             node_name = replacer.conversions[node_name]
         end
 
-        if minetest.get_node_group(node_name, "not_in_creative_inventory") ~= 0 then
+        if minetest.get_node_group(node_name, "not_in_replacer") ~= 0 then
             return replacer.set_hud(name, "Error: " .. node_name .. " cannot be selected")
         end
         metadata = node_name..' '..node.param1..' '..node.param2;
@@ -298,6 +298,34 @@ replacer.node_is_owned = function(pos, placer)
     else
         return false
     end
+end
+
+-- Handle taking item from inventory or unified inventory bags
+local function get_player_bag_stack(player, i)
+    return minetest.get_inventory({
+        type = "detached",
+        name = user:get_player_name() .. "_bags"
+    }):get_stack("bag" .. i, 1)
+end
+
+replacer.remove_from_inventory = function()
+    
+    
+    local inv = user:get_inventory()
+    for i = 1, 4 do
+        local def = get_player_bag_stack(player, i):get_definition()
+        if def.groups.bagslots then
+            local list_name = "bag" .. i .. "contents"
+            local size = inv:get_size(list_name)
+            for si = 1, size do
+                local stk = inv:get_stack(list_name, si)
+                if not stk:is_empty() then
+                    minetest.chat_send_all(stk:to_string())
+                end
+            end
+        end
+    end
+    
 end
 
 -- Handle mode setting/getting
