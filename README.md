@@ -63,9 +63,15 @@ Just wield it and click on any node or entity you want to know more about. A lim
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### Change log: 
-- 11.27.2021   
+- 29.5.2023
+   - Add `replacer.add_conversion` for registering automatic conversions of nodes to desired nodes when selected (ex. Selected: "default:dirt_with_grass", Places: "defaut:dirt"). Includes full support for current default biome top nodes to filler, decorations and active furnace support.
+   - Add support for taking items from bags in unified inventory in survival mode. Replacer now consumes item from inventory before placing/replacing node.
+   - Prevent replacement of nodes with non empty inventory.
+   - Add support of using `{groups = 'not_in_replacer' = 1}` in node definitions of nodes that should be excluded from being selected or placed with replacer tool.  
+- 27.11.2021   
    - Add mode setting for paint and legacy keybindings
    - Code and documentation cleaned up and updated.
+   - ustom replacer texture
 - 2020         
    - Added HUD support and remove chat messages
    - Added new keybinding to allow paint mechanic while replacing nodes

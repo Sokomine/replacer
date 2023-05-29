@@ -45,6 +45,9 @@ replacer.add_conversion("default:dry_grass_5", "default:dry_grass_1")
 replacer.add_conversion("default:fern_2", "default:fern_1")
 replacer.add_conversion("default:marram_grass_2", "default:marram_grass_1")
 replacer.add_conversion("default:marram_grass_3", "default:marram_grass_1")
+-- misc
+replacer.add_conversion("default:blueberry_bush_leaves_with_berries", "default:blueberry_bush_leaves")
+replacer.add_conversion("default:furnace_active", "default:furnace")
 
 -- Tool
 minetest.register_tool("replacer:replacer", {
