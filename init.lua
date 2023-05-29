@@ -219,8 +219,13 @@ replacer.replace = function(itemstack, user, pointed_thing, mode)
     }))) then
         -- does the player carry at least one of the desired nodes with him?
         if (not (user:get_inventory():contains_item("main", daten[1]))) then
-            replacer.set_hud(name, "You have no further '" .. (daten[1] or "?") .. "'. Replacement failed.")
-            return nil
+            if not (replacer.remove_from_bags(user, daten[1])) then
+                replacer.set_hud(name, "You have no further '" .. (daten[1] or "?") .. "'. Replacement failed.")
+                return nil
+            end
+        else
+             -- consume the item
+            user:get_inventory():remove_item("main", daten[1] .. " 1")
         end
 
         -- give the player the item by simulating digging if possible
@@ -239,12 +244,7 @@ replacer.replace = function(itemstack, user, pointed_thing, mode)
                         "' failed.\nUnable to remove old node.")
                 return nil
             end
-
         end
-
-        -- consume the item
-        user:get_inventory():remove_item("main", daten[1] .. " 1")
-
     end
 
     minetest.add_node(pos, {
@@ -298,6 +298,57 @@ replacer.node_is_owned = function(pos, placer)
     else
         return false
     end
+end
+
+-- Handle taking item from inventory or unified inventory bags
+
+local save_bags_metadata = function(player, bags_inv)
+	local is_empty = true
+	local bags = {}
+	for i = 1, 4 do
+		local bag = "bag" .. i
+		if not bags_inv:is_empty(bag) then
+			-- Stack limit is 1, otherwise use stack:to_string()
+			bags[i] = bags_inv:get_stack(bag, 1):get_name()
+			is_empty = false
+		end
+	end
+	local meta = player:get_meta()
+	if is_empty then
+		meta:set_string("unified_inventory:bags", nil)
+	else
+		meta:set_string("unified_inventory:bags",
+			minetest.serialize(bags))
+	end
+end
+
+local function get_player_bag_stack(player, i)
+    return minetest.get_inventory({
+        type = "detached",
+        name = player:get_player_name() .. "_bags"
+    }):get_stack("bag" .. i, 1)
+end
+
+replacer.remove_from_bags = function(user, item_name)
+    if not minetest.get_modpath("unified_inventory") then
+        return false
+    end
+    local inv = user:get_inventory()
+    for i = 1, 4 do
+        local def = get_player_bag_stack(user, i):get_definition()
+        if def.groups.bagslots then
+            local list_name = "bag" .. i .. "contents"
+            local size = inv:get_size(list_name)
+            for si = 1, size do
+                local stk = inv:get_stack(list_name, si)
+                if stk:get_name() == item_name then
+                   inv:remove_item(list_name, item_name .. " 1")
+                   return true
+                end
+            end
+        end
+    end
+    return false
 end
 
 -- Handle mode setting/getting
