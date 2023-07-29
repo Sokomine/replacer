@@ -45,9 +45,16 @@ replacer.add_conversion("default:dry_grass_5", "default:dry_grass_1")
 replacer.add_conversion("default:fern_2", "default:fern_1")
 replacer.add_conversion("default:marram_grass_2", "default:marram_grass_1")
 replacer.add_conversion("default:marram_grass_3", "default:marram_grass_1")
--- misc
+-- misc default
 replacer.add_conversion("default:blueberry_bush_leaves_with_berries", "default:blueberry_bush_leaves")
 replacer.add_conversion("default:furnace_active", "default:furnace")
+-- farming
+replacer.add_conversion("farming:soil", "default:dirt")
+replacer.add_conversion("farming:soil_wet", "default:dirt")
+replacer.add_conversion("farming:dry_soil", "default:dry_dirt")
+replacer.add_conversion("farming:dry_soil_wet", "default:dry_dirt")
+replacer.add_conversion("farming:desert_sand_soil", "default:desert_sand")
+replacer.add_conversion("farming:desert_sand_soil_wet", "default:desert_sand")
 
 -- Tool
 minetest.register_tool("replacer:replacer", {
@@ -72,7 +79,7 @@ minetest.register_tool("replacer:replacer", {
       local keys = placer:get_player_control()
       if mode == "legacy" then
          if( not( keys["sneak"] )) then
-            return replacer.replace( itemstack, placer, pointed_thing, 0  );
+            return replacer.replace( itemstack, placer, pointed_thing, 0);
         end
         return replacer.set_replacement_node(itemstack, placer, pointed_thing)
       end
@@ -94,7 +101,7 @@ minetest.register_tool("replacer:replacer", {
          return nil
       end
       if mode == "legacy" then 
-         return replacer.replace( itemstack, user, pointed_thing, above );
+         return replacer.replace( itemstack, user, pointed_thing, above);
       end
       if (keys["sneak"]) then
          return replacer.set_replacement_node(itemstack, user, pointed_thing)
