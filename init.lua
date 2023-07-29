@@ -380,7 +380,7 @@ replacer.get_mode = function(player)
    end
    return mode_name
 end
-      
+
 -- Chat command to set mode
 minetest.register_chatcommand("replacer_mode", {
    params = "<mode_name>",
@@ -398,4 +398,3 @@ minetest.register_craft({
     output = 'replacer:replacer',
     recipe = {{'default:chest', '', ''}, {'', 'default:stick', ''}, {'', '', 'default:chest'}}
 })
-
