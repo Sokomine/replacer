@@ -48,6 +48,8 @@ dofile(minetest.get_modpath("replacer").."/check_owner.lua");
 
 replacer = {};
 
+replacer.default_dirt = "default:dirt"
+
 replacer.blacklist = {};
 
 -- playing with tnt and creative building are usually contradictory
@@ -119,7 +121,7 @@ minetest.register_tool( "replacer:replacer",
        local pos  = minetest.get_pointed_thing_position( pointed_thing, false ); -- node under
        local node = minetest.get_node_or_nil( pos );
        
-       local pattern = "default:dirt 0 0";
+       local pattern = replacer.default_dirt.." 0 0";
        if( node ~= nil and node.name ) then
           pattern = node.name..' '..node.param1..' '..node.param2;
        end
@@ -162,7 +164,7 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
 
        -- make sure it is defined
        if(not(pattern) or pattern == "") then
-          pattern = "default:dirt 0 0";
+          pattern = replacer.default_dirt.." 0 0";
        end
 
        local keys=user:get_player_control();
@@ -220,9 +222,9 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
  
           -- players usually don't carry dirt_with_grass around; it's safe to assume normal dirt here
           -- fortunately, dirt and dirt_with_grass does not make use of rotation
-          if( daten[1] == "default:dirt_with_grass" ) then
-             daten[1] = "default:dirt";
-             pattern = "default:dirt 0 0";
+          if( daten[1] == "default:dirt_with_grass" or daten[1] == "mcl_core:dirt_with_grass") then
+             daten[1] = replacer.default_dirt
+             pattern = replacer.default_dirt.." 0 0";
           end
 
           -- does the player carry at least one of the desired nodes with him?
@@ -263,12 +265,25 @@ replacer.replace = function( itemstack, user, pointed_thing, mode )
     end
 
 
-minetest.register_craft({
-        output = 'replacer:replacer',
-        recipe = {
-                { 'default:chest', '',              '' },
-                { '',              'default:stick', '' },
-                { '',              '',              'default:chest' },
-        }
-})
-
+-- do the exception for MineClone first...
+if(minetest.registered_nodes["mcl_chests:chest"]) then
+	replacer.default_dirt = "mcl_core:dirt"
+	minetest.register_craft({
+	        output = 'replacer:replacer',
+	        recipe = {
+	                { 'mcl_chests:chest', '',              '' },
+	                { '',              'mcl_core:stick', '' },
+	                { '',              '',              'mcl_chests:chest' },
+	        }
+	})
+-- then the normal receipe
+elseif(minetest.registered_nodes["default:chest"]) then
+	minetest.register_craft({
+	        output = 'replacer:replacer',
+	        recipe = {
+	                { 'default:chest', '',              '' },
+	                { '',              'default:stick', '' },
+	                { '',              '',              'default:chest' },
+	        }
+	})
+end

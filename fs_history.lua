@@ -52,7 +52,7 @@ replacer.set_to = function(player_name, pattern, player, itemstack)
 	end
 	-- fallback if nothing is given
 	if(not(pattern)) then
-		pattern = "default:dirt 0 0"
+		pattern = replacer.default_dirt.." 0 0"
 	end
 
 	local set_to = replacer.human_readable_pattern(pattern)
@@ -156,8 +156,8 @@ replacer.get_formspec = function(player_name, current_pattern, player)
 			if(not(parts) or #parts<1) then
 				parts = {"does not exist"}
 			-- TODO: handle this in a more general way
-			elseif(parts[1] == "default:dirt_with_grass") then
-				parts[1] = "default:dirt"
+			elseif(parts[1] == "default:dirt_with_grass" or parts[1] == "mcl_core:dirt_with_grass") then
+				parts[1] = replacer.default_dirt
 			end
 			if(counted_inv[ parts[1] ]) then
 				amount_left = "#00FF00,"..tostring(counted_inv[ parts[1] ]).." available:"..

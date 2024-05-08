@@ -1,5 +1,0 @@
-default?
-dye?
-moreblocks?
-stairs?
-stairsplus?

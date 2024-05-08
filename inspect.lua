@@ -7,14 +7,18 @@ if(    minetest.get_modpath("trees")
    and minetest.get_modpath("instruments")
    and minetest.get_modpath("anvil")
    and minetest.get_modpath("scribing_table")) then
-	replacer.image_replacements[ "group:planks" ] = "trees:pine_planks";
-	replacer.image_replacements[ "group:plank"  ] = "trees:pine_plank";
-	replacer.image_replacements[ "group:wood"   ] = "trees:pine_planks";
-	replacer.image_replacements[ "group:tree"   ] = "trees:pine_log";
-	replacer.image_replacements[ "group:sapling"] = "trees:pine_sapling";
-	replacer.image_replacements[ "group:leaves" ] = "trees:pine_leaves";
+--	replacer.image_replacements[ "group:planks" ] = "trees:pine_planks";
+--	replacer.image_replacements[ "group:plank"  ] = "trees:pine_plank";
+--	replacer.image_replacements[ "group:wood"   ] = "trees:pine_planks";
+--	replacer.image_replacements[ "group:tree"   ] = "trees:pine_log";
+--	replacer.image_replacements[ "group:sapling"] = "trees:pine_sapling";
+--	replacer.image_replacements[ "group:leaves" ] = "trees:pine_leaves";
 	replacer.image_replacements[ "default:furnace" ] = "oven:oven";
 	replacer.image_replacements[ "default:furnace_active" ] = "oven:oven_active";
+-- MineClone
+elseif(minetest.registered_items["mcl_furnaces:furnace"]) then
+	replacer.image_replacements[ "default:furnace" ] = "mcl_furnaces:furnace"
+	replacer.image_replacements[ "default:furnace_active" ] = "mcl_furnaces:furnace_active"
 end
 
 minetest.register_tool( "replacer:inspect",
@@ -85,6 +89,10 @@ replacer.inspect = function( itemstack, user, pointed_thing, mode, show_receipe 
 					end
 					if( sdata.age ) then
 						text = text..', dropped '..tostring( math.floor( sdata.age/60 ))..' minutes ago';
+					end
+					-- show the owner of an entity
+					if( sdata.owner ) then
+						text = text..' (owned by '..minetest.formspec_escape(sdata.owner)..")"
 					end
 				end
 			else
@@ -164,14 +172,38 @@ if( minetest.get_modpath("dye") and dye and dye.basecolors) then
 	end
 end 
 
+
+-- find the first known member of a group as an example/representative
+replacer.get_first_group_member = function(group_name)
+	for k,v in pairs(minetest.registered_items) do
+		if(v and v.groups and v.groups[group_name] and v.groups[group_name] > 0) then
+			return k
+		end
+	end
+	-- nothing found
+	return group_name
+end
+
+
 replacer.image_button_link = function( stack_string )
 	local group = '';
 	if( replacer.image_replacements[ stack_string ] ) then
 		stack_string = replacer.image_replacements[ stack_string ];
 	end
-	if( replacer.group_placeholder[ stack_string ] ) then
+	replacer.group_placeholder[ 'group:wood_slab'] = 'stairs:slab_wood';
+
+	-- if it is a group
+	if( string.sub(stack_string, 1, 6) == "group:"
+	   -- ..and there is no known member of that group yet
+	   and (not(replacer.group_placeholder[ stack_string ])
+	     -- or the known member does not exist
+	     or not(minetest.registered_items[ replacer.group_placeholder[ stack_string ]]))) then
+		-- find and store a suitable group member as example
+		replacer.group_placeholder[ stack_string ] = replacer.get_first_group_member(string.sub(stack_string, 7))
+	end
+	if(replacer.group_placeholder[ stack_string ] ) then
+		group = 'Group\n'..minetest.formspec_escape(string.sub(stack_string, 7))
 		stack_string = replacer.group_placeholder[ stack_string ];
-		group = 'G';
 	end		
 -- TODO: show information about other groups not handled above
 	local stack = ItemStack( stack_string );
@@ -299,9 +331,9 @@ replacer.inspect_show_crafting = function( name, node_name, fields )
 	-- provide additional information regarding the node in particular that has been inspected
 	if( fields.pos ) then
 		formspec = formspec.."label[0.0,0.3;Located at "..
-			minetest.formspec_escape( minetest.pos_to_string( fields.pos ));
+			minetest.formspec_escape( minetest.pos_to_string( fields.pos )).."]"
 		if( fields.param2 ) then
-			formspec = formspec.." with param2="..tostring( fields.param2 );
+			formspec = formspec.."label[0.0,0.6;with param2="..tostring( fields.param2 )
 		end
 		if( fields.light ) then
 			formspec = formspec.." and receiving "..tostring( fields.light ).." light";
@@ -405,10 +437,22 @@ end
 minetest.register_on_player_receive_fields( replacer.form_input_handler );
 
 
-minetest.register_craft({
-        output = 'replacer:inspect',
-        recipe = {
-                { 'default:torch' },
-                { 'default:stick' },
-        }
-})
+-- do the exception for MineClone first...
+if(minetest.registered_items["mcl_core:stick"]) then
+	minetest.register_craft({
+	        output = 'replacer:inspect',
+	        recipe = {
+	                { 'mcl_torches:torch' },
+	                { 'mcl_core:stick' },
+	        }
+	})
+-- ..then the normal version
+elseif(minetest.registered_nodes["default:torch"]) then
+	minetest.register_craft({
+	        output = 'replacer:inspect',
+	        recipe = {
+	                { 'default:torch' },
+	                { 'default:stick' },
+	        }
+	})
+end
